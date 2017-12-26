@@ -26,6 +26,8 @@ public class Client {
 
     private Thread clientThread;
 
+    
+
     private DataProcessorChain readDataProcessorChain;
     private DataProcessorChain writeDataProcessorChain;
 
@@ -66,13 +68,7 @@ public class Client {
         this.listener = listener;
     }
 
-    public final void connect() throws IOException {
-        selector = Selector.open();
-        pendingData = new PendingData();
-
-        socketChannel = SocketChannel.open(this.socketAddress);
-        socketChannel.configureBlocking(false);
-        socketChannel.register(selector, SelectionKey.OP_READ);
+    public final void connect() throws IOException {      
         //socketChannel.reg
         clientThread = new Thread(new ClientRunnable());
         clientThread.start();
@@ -138,6 +134,15 @@ public class Client {
     private class ClientRunnable implements Runnable {
         @Override
         public void run() {
+            try{
+                selector = Selector.open();
+                pendingData = new PendingData();
+                socketChannel = SocketChannel.open(socketAddress);
+                socketChannel.configureBlocking(false);                
+                socketChannel.register(selector, SelectionKey.OP_READ);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     selector.select(100);
