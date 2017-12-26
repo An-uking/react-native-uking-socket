@@ -1,5 +1,5 @@
 {
-  "name": "react-native-sockets",
+  "name": "react-native-uking-socket",
   "version": "0.0.4",
   "description": "Socket server and client bindings for React Native (Android)",
   "main": "index.android.js",
@@ -8,29 +8,24 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/davidstoneham/react-native-sockets.git"
+    "url": "git+https://github.com/An-uking/react-native-uking-socket.git"
   },
   "keywords": [
     "react-native-sockets",
     "react-component",
     "reactnative",
     "react-native",
-    "sockets",
+    "socket",
     "android"
   ],
   "author": "David Stoneham",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/davidstoneham/react-native-sockets/issues"
+    "url": "https://github.com/An-uking/react-native-uking-socket/issues"
   },
-  "homepage": "https://github.com/davidstoneham/react-native-sockets",
-  "peerDependencies": {
-    "react-native": ">=0.14.0"
-  },
-  "dependencies": {
-    "rnpm": "1.5.2"
-  },
-  "directories": {
-    "example": "example"
+  "homepage": "https://github.com/An-uking/react-native-uking-socket",
+  "devDependencies": {
+    "react": "^16.0.0",
+    "react-native": "^0.51.0"
   }
 }
