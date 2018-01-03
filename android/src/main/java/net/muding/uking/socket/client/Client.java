@@ -148,20 +148,7 @@ public class Client {
 
     private class ClientRunnable implements Runnable {
         @Override
-<<<<<<< HEAD
         public void run() {            
-=======
-        public void run() {
-            try{
-                selector = Selector.open();
-                pendingData = new PendingData();
-                socketChannel = SocketChannel.open(socketAddress);
-                socketChannel.configureBlocking(false);                
-                socketChannel.register(selector, SelectionKey.OP_READ);
-            }catch (IOException e){
-                e.printStackTrace();
-            }
->>>>>>> cfb78e27d383e324de24146d18b6afcc2eb1921b
             while (!Thread.currentThread().isInterrupted()) {
                 try {                    
                     selector.select(100);                    
