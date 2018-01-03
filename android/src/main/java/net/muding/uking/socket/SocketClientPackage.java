@@ -6,7 +6,7 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 
-package net.muding.uking.niosocket.SocekClientModule;
+import net.muding.uking.socket.SocketClientModule;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class SocketClientPackage implements ReactPackage {
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
-        modules.add(new SocekClientModule(reactContext));
+        modules.add(new SocketClientModule(reactContext));
         return modules;
     }
 

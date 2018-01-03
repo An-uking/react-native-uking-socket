@@ -26,12 +26,15 @@ public class Client {
 
     private Thread clientThread;
 
+    private Boolean isReconnect=false;
+
     private DataProcessorChain readDataProcessorChain;
     private DataProcessorChain writeDataProcessorChain;
 
     public interface Listener {
         void onDataReceived(byte[] data);
         void onServerDisconnect();
+        void onServerConnect(String msg);
     }
 
     public Client(int portToConnectTo) {
@@ -58,29 +61,39 @@ public class Client {
         writeDataProcessorChain.addDataProcessor(dataProcessor);
     }
 
+    public final void setReconnect(boolean flag){
+        this.isReconnect=flag;
+    }
+
     public final boolean isConnected() {
-        return clientThread.isAlive();
+        return clientThread.isAlive()&&socketChannel.isConnected();
     }
 
     public final void setListener(Listener listener) {
         this.listener = listener;
     }
 
-    public final void connect() throws IOException {
+    public final void connect() throws IOException {      
+        //socketChannel.reg
         selector = Selector.open();
         pendingData = new PendingData();
-
-        socketChannel = SocketChannel.open(this.socketAddress);
-        socketChannel.configureBlocking(false);
-        socketChannel.register(selector, SelectionKey.OP_READ);
-        //socketChannel.reg
+        socketChannel = SocketChannel.open();        
+        socketChannel.configureBlocking(false);                
+        //socketChannel.register(selector, SelectionKey.OP_READ);
+        //socketChannel.connect(socketAddress);
+        listener.onServerConnect("begin to connect server");
+        if(socketChannel.connect(this.socketAddress)){
+            socketChannel.register(selector, SelectionKey.OP_READ);
+            listener.onServerConnect("connect success");
+        }else{
+            socketChannel.register(selector, SelectionKey.OP_CONNECT);
+        }
         clientThread = new Thread(new ClientRunnable());
         clientThread.start();
     }
 
     public final void disconnect() throws IOException {
         if (!isConnected()) return;
-
         clientThread.interrupt();
     }
 
@@ -89,8 +102,7 @@ public class Client {
 
         data = writeDataProcessorChain.process(data);
 
-        ByteBuffer dataBuffer = (ByteBuffer) ByteBuffer.allocate(data.length + 1)
-                .put(data).put((byte) 0x00).flip();
+        ByteBuffer dataBuffer = (ByteBuffer) ByteBuffer.allocate(data.length + 1).put(data).put((byte) 0x00).flip();                
         socketChannel.write(dataBuffer);
         dataBuffer.clear();
     }
@@ -125,8 +137,7 @@ public class Client {
             public void onConnectionFailure(SelectionKey key) {
                 try {
                     key.cancel();
-                    key.channel().close();
-
+                    key.channel().close();                    
                     if (listener != null)
                         listener.onServerDisconnect();
                 } catch (IOException ignored) {}
@@ -137,34 +148,46 @@ public class Client {
 
     private class ClientRunnable implements Runnable {
         @Override
-        public void run() {
+        public void run() {            
             while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    selector.select(100);
-
+                try {                    
+                    selector.select(100);                    
                     Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
-
+                    //listener.onServerConnect("connecting");
                     while (keys.hasNext()) {
                         SelectionKey key = keys.next();
                         keys.remove();
-
                         if (!key.isValid())
                             continue;
-                        if (key.isReadable()){
+                        if(key.isConnectable()){                             
+                            SocketChannel socketChannel = (SocketChannel) key.channel();  
+                            socketChannel.finishConnect();      
+                            listener.onServerConnect("connect success");                
+                            key.interestOps(key.interestOps() & ~SelectionKey.OP_CONNECT); // 取消监听连接就绪（否则selector会不断提醒连接就绪）
+                            key.interestOps(key.interestOps() | SelectionKey.OP_READ | SelectionKey.OP_WRITE); // 监听读就绪和写就绪                            
+                        }
+                        if (key.isReadable()){               
                             read(key);
                         }
 
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //listener.onServerConnect("connect Exception");
+                    //e.printStackTrace();
                     break;
                 }
             }
 
             try {
+                listener.onServerConnect("reconnect begin");
                 selector.close();
                 socketChannel.close();
+                if(isReconnect){
+                    connect();
+                }
             } catch (IOException e) {
+                listener.onServerConnect("reconnect begin");
+
                 e.printStackTrace();
             }
         }
