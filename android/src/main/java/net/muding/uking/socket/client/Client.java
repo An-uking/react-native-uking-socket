@@ -75,7 +75,6 @@ public class Client {
 
     public final void connect() throws IOException {      
         //socketChannel.reg
-<<<<<<< HEAD
         selector = Selector.open();
         pendingData = new PendingData();
         socketChannel = SocketChannel.open();        
@@ -89,8 +88,6 @@ public class Client {
         }else{
             socketChannel.register(selector, SelectionKey.OP_CONNECT);
         }
-=======
->>>>>>> cfb78e27d383e324de24146d18b6afcc2eb1921b
         clientThread = new Thread(new ClientRunnable());
         clientThread.start();
     }
